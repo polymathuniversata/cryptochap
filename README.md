@@ -338,27 +338,59 @@ function buildOnrampLink({ provider, address, amount }: { provider: string, addr
 
 Notes:
 - Use proper verification for Twilio/Meta signatures before trusting inbound messages.
-# cryptoChap — WhatsApp USDC on Base
+<div align="center">
 
-Send and receive USDC on the Base network directly from WhatsApp. Includes a WhatsApp-native onramp so users can buy USDC and have it delivered to their wallet—without leaving chat.
+# 🔗 cryptoChap
+### WhatsApp-native USDC on Base
 
+*Send, receive, and buy USDC on Base network through WhatsApp chat*
 
-## Table of contents
+[![Base Network](https://img.shields.io/badge/Base-0052FF?style=for-the-badge&logo=ethereum&logoColor=white)](https://base.org)
+[![USDC](https://img.shields.io/badge/USDC-2775CA?style=for-the-badge&logo=centre&logoColor=white)](https://centre.io)
+[![WhatsApp](https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://whatsapp.com)
 
-- What you get
-- How it works (architecture)
-- WhatsApp integration options
-- Base and USDC specifics
-- Wallet custody strategies
-- Environment variables
-- Onramp flows from WhatsApp
-- Mobile money on/off-ramp (M-Pesa, Airtel Money, Tigo Pesa)
-- Message command design (examples)
-- Minimal server outline (Node + Express + ethers v6)
-- Webhooks and deployment
-- Security, compliance, and risk
-- Troubleshooting
-- References
+</div>
+
+---
+
+## ✨ What you get
+
+🚀 **WhatsApp-first experience** — Native chat interface for crypto operations  
+💰 **Auto wallet generation** — Unique wallet per user (custodial or non-custodial)  
+⚡ **Base network integration** — Fast, low-cost USDC transfers  
+🛒 **Seamless onramp** — Buy crypto with fiat, mobile money, or cards  
+📱 **Mobile money support** — M-Pesa, Airtel Money, Tigo Pesa integration  
+🔐 **Enterprise security** — Webhook architecture with proper validation  
+
+---
+
+## 🏗️ How it works
+
+```
+User message → WhatsApp API → Your server → Base network → Response
+```
+
+1. **📥 Receive** — User sends command via WhatsApp
+2. **🔍 Process** — Bot parses intent and maps phone to wallet
+3. **⚡ Execute** — Perform on-chain action or generate payment link
+4. **📤 Respond** — Send confirmation, links, or transaction details
+
+---
+
+## 🔧 Integration options
+
+### WhatsApp Providers
+| Provider | Setup Time | Features |
+|----------|------------|----------|
+| **Twilio** | 🟢 Fast | Single webhook, business API |
+| **Meta Cloud API** | 🟡 Medium | Templates, media, direct integration |
+
+### Supported Commands
+- `💰 balance` — Check USDC and ETH balance
+- `📍 address` — Get your deposit address  
+- `💳 buy 50` — Purchase USDC with fiat/mobile money
+- `📤 send 10 USDC to 0x...` — Transfer to address or phone
+- `📋 history` — View recent transactions
 
 
 ## What you get
@@ -429,43 +461,141 @@ Pick one strategy and note the trade-offs:
 - User provides their own address; bot only reads balances and generates onramp links. For “send”, bot can only craft/share a pre-signed transaction if keys are elsewhere.
 
 
-## Environment variables
+---
 
-Create a .env (example keys; adjust for your provider choices):
+## ⚙️ Base Network Configuration
 
+| Parameter | Value |
+|-----------|-------|
+| **Chain ID** | `8453` (Base Mainnet) |
+| **USDC Contract** | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` |
+| **Gas Token** | ETH on Base |
+| **RPC Providers** | Alchemy, Infura, QuickNode, Ankr |
+
+---
+
+## 🏦 Wallet Strategies
+
+### 🔐 Custodial (Recommended for MVP)
+- **Pros:** Simple UX, instant transactions
+- **Implementation:** HD derivation from master seed
+- **Security:** Requires HSM/KMS for production
+
+### 🤖 Smart Accounts  
+- **Pros:** Gas sponsorship, programmable policies
+- **Implementation:** Account abstraction with bundlers
+- **Use case:** Advanced features, social recovery
+
+### 🔗 Non-custodial
+- **Pros:** User controls keys
+- **Implementation:** User provides wallet address
+- **Limitation:** Read-only operations, external signing
+
+---
+
+## 🛒 Onramp Providers
+
+### Credit Cards & Bank Transfers
+| Provider | Regions | Integration |
+|----------|---------|-------------|
+| **Coinbase** | Global | Hosted widget |
+| **MoonPay** | 160+ countries | API + widget |
+| **Transak** | 100+ countries | Direct API |
+| **Stripe** | 40+ countries | Onramp sessions |
+
+### Mobile Money (Africa)
+| Provider | Countries | Methods |
+|----------|-----------|---------|
+| **M-Pesa** | Kenya, Tanzania | STK Push, B2C |
+| **Airtel Money** | 14 countries | Collections API |
+| **Tigo Pesa** | East Africa | Business API |
+
+---
+
+## 🚀 Quick Start
+
+### 1. Environment Setup
+```bash
+# Clone and configure
+git clone https://github.com/polymathuniversata/cryptochap
+cd cryptochap
+cp .env.example .env
+```
+
+### 2. Key Configuration
 ```env
-# WhatsApp provider: twilio | meta
+# WhatsApp (choose one)
 WHATSAPP_PROVIDER=twilio
+TWILIO_ACCOUNT_SID=your_sid
+TWILIO_AUTH_TOKEN=your_token
 
-# Twilio (if using Twilio WhatsApp API)
-TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-TWILIO_AUTH_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-TWILIO_WHATSAPP_NUMBER=whatsapp:+1xxxxxxxxxx
-
-# Meta WhatsApp Cloud API (if using Meta)
-META_WHATSAPP_TOKEN=EAAG...
-META_VERIFY_TOKEN=your_webhook_verify_token
-META_PHONE_NUMBER_ID=1xxxxxxxxxxxxxxx
-META_APP_ID=xxxxxxxxxxxxxxx
-META_APP_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-# Chain config
+# Base Network
 BASE_RPC_URL=https://base-mainnet.g.alchemy.com/v2/your-key
-BASE_CHAIN_ID=8453
 USDC_CONTRACT=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
 
-# Signing
-OPERATOR_MNEMONIC="seed phrase words ..."
-# or
+# Security (use KMS in production)
 OPERATOR_PRIVATE_KEY=0x...
-
-# Onramp (choose one or more)
-ONRAMP_PROVIDER=coinbase
-COINBASE_ONRAMP_APP_ID=your_app_id
-MOONPAY_API_KEY=pk_test_...
-TRANSAK_API_KEY=pk_test_...
-STRIPE_SECRET_KEY=sk_test_...
 ```
+
+### 3. Deploy & Test
+```bash
+# Start server
+npm start
+
+# Set webhook URL in provider dashboard
+# Test with WhatsApp: "balance"
+```
+
+---
+
+## 🔒 Security & Compliance
+
+### 🛡️ Production Requirements
+- **Key Management:** Use HSM/KMS (AWS KMS, Azure Key Vault)
+- **Rate Limiting:** Per-user and global limits
+- **KYC/AML:** Provider-enforced compliance
+- **Data Privacy:** Encrypt PII, secure phone number handling
+
+### ⚠️ Risk Considerations
+- **Custody Risk:** You control user funds in custodial mode
+- **Regulatory:** Comply with local financial regulations
+- **Operational:** Monitor treasury balances and reconciliation
+
+---
+
+## 🐛 Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| **Gas Errors** | Fund operator wallet with Base ETH |
+| **Webhook Failures** | Verify HTTPS URL and signatures |
+| **Mobile Money Fails** | Check phone format and provider limits |
+| **Onramp Issues** | Validate provider parameters and allowlists |
+
+---
+
+## 📚 Resources
+
+### 🔗 Essential Links
+- [Base Network](https://base.org) — L2 documentation
+- [BaseScan](https://basescan.org) — Block explorer
+- [Twilio WhatsApp](https://www.twilio.com/whatsapp) — Messaging API
+- [Meta Cloud API](https://developers.facebook.com/docs/whatsapp/) — Direct WhatsApp integration
+
+### 🏗️ Development Tools
+- [ethers.js](https://docs.ethers.org) — Ethereum library
+- [Coinbase Onramp](https://docs.cloud.coinbase.com) — Crypto purchasing
+- [M-Pesa API](https://developer.safaricom.co.ke/) — Mobile money integration
+
+---
+
+<div align="center">
+
+**Built for the future of accessible crypto** 🌍
+
+*Made with ❤️ for global financial inclusion*
+
+</div>
 
 
 ## Onramp flows from WhatsApp
