@@ -11,7 +11,10 @@
       "Bash(npm install)",
       "Bash(npm run build:*)",
       "Bash(npm run dev:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(timeout 10s npm run dev)",
+      "Bash(npx next dev:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []
