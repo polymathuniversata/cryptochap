@@ -6,13 +6,17 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "manage-whatsapp": "pwsh ./manage-whatsapp.ps1",
+    "test-webhook": "pwsh ./test-webhook-enhanced.ps1",
+    "upgrade-whatsapp": "pwsh ./upgrade-whatsapp.ps1"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.0.4",
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-scroll-area": "^1.0.5",
     "@radix-ui/react-separator": "^1.0.3",
+    "dotenv": "^16.6.1",
     "ethers": "^6.10.0",
     "lucide-react": "^0.263.1",
     "next": "15.5.0",

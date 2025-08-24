@@ -27,7 +27,7 @@ const simulateWhatsAppMessage = () => {
               messaging_product: 'whatsapp',
               metadata: {
                 display_phone_number: '+1234567890',
-                phone_number_id: '109876543210987654'
+                phone_number_id: '751548871372266'
               },
               contacts: [
                 {
