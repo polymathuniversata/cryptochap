@@ -1,0 +1,240 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { whatsappService } from '@/lib/services/whatsapp.service';
+import { logger } from '@/lib/services/logging.service';
+import { tokenManager } from '@/lib/services/token-management.service';
+import { MessageProcessor } from '@/lib/whatsapp/message-processor';
+import { WhatsAppTemplates } from '@/lib/whatsapp/templates';
+
+/**
+ * Process a text message from WhatsApp
+ */
+async function processTextMessage(
+  messageText: string, 
+  fromNumber: string, 
+  messageProcessor: MessageProcessor
+) {
+  logger.debug(`Processing text message: "${messageText}" from ${fromNumber}`);
+  
+  try {
+    // Check for welcome/greeting messages to trigger main menu
+    const isGreeting = /^(hi|hello|hey|start|menu|help|welcome)$/i.test(messageText.trim());
+    
+    if (isGreeting) {
+      logger.info(`Sending welcome menu to ${fromNumber}`);
+      return WhatsAppTemplates.getMainMenuInteractive(fromNumber);
+    } 
+    
+    // Process regular message
+    const command = messageProcessor.parseCommand(messageText);
+    const response = await messageProcessor.processCommand(command, fromNumber);
+    
+    return {
+      messaging_product: 'whatsapp',
+      to: fromNumber,
+      type: 'text',
+      text: {
+        body: response,
+      },
+    };
+  } catch (error) {
+    logger.error('Error processing message', error);
+    
+    return {
+      messaging_product: 'whatsapp',
+      to: fromNumber,
+      type: 'text',
+      text: {
+        body: '❌ Something went wrong. Please try again or type "help" for available commands.',
+      },
+    };
+  }
+}
+
+/**
+ * Process an interactive message from WhatsApp
+ */
+async function processInteractiveMessage(
+  interactive: any,
+  fromNumber: string,
+  messageProcessor: MessageProcessor
+) {
+  const buttonId = interactive.button_reply?.id || interactive.list_reply?.id;
+  logger.debug(`Processing interactive message with button ID: ${buttonId} from ${fromNumber}`);
+  
+  switch (buttonId) {
+    case 'check_balance':
+      return await processTextMessage('balance', fromNumber, messageProcessor);
+    
+    case 'buy_usdc':
+      return WhatsAppTemplates.getBuyOptionsInteractive(fromNumber);
+    
+    case 'send_money':
+      return {
+        messaging_product: 'whatsapp',
+        to: fromNumber,
+        type: 'text',
+        text: {
+          body: 'To send money, use this format:\n\n"send 10 USDC to 0x1234..."\nor\n"send 5 USDC to +1234567890"\n\nHow much would you like to send?',
+        },
+      };
+    
+    case 'buy_25':
+    case 'buy_50':
+    case 'buy_100':
+      const amount = buttonId.split('_')[1];
+      return await processTextMessage(`buy ${amount}`, fromNumber, messageProcessor);
+    
+    case 'buy_custom':
+      return {
+        messaging_product: 'whatsapp',
+        to: fromNumber,
+        type: 'text',
+        text: {
+          body: 'Enter the amount you\'d like to purchase:\n\nExample: "buy 75" for $75 USDC',
+        },
+      };
+    
+    case 'main_menu':
+      return WhatsAppTemplates.getMainMenuInteractive(fromNumber);
+    
+    default:
+      return WhatsAppTemplates.getMainMenuInteractive(fromNumber);
+  }
+}
+
+/**
+ * Handle GET requests for webhook verification
+ */
+export async function GET(request: NextRequest) {
+  const url = new URL(request.url);
+  const mode = url.searchParams.get('hub.mode');
+  const token = url.searchParams.get('hub.verify_token');
+  const challenge = url.searchParams.get('hub.challenge');
+
+  logger.info('WhatsApp Webhook verification request received', {
+    mode,
+    token,
+    challenge: challenge?.substring(0, 10) + '...',
+    expectedToken: process.env.META_VERIFY_TOKEN
+  });
+
+  if (mode === 'subscribe' && token === process.env.META_VERIFY_TOKEN) {
+    logger.info('Webhook verified successfully!');
+    return new NextResponse(challenge);
+  }
+
+  logger.warn('Webhook verification failed!');
+  return new NextResponse('Forbidden', { status: 403 });
+}
+
+/**
+ * Handle POST requests for incoming messages
+ */
+export async function POST(request: NextRequest) {
+  logger.info('Webhook POST request received');
+  
+  try {
+    const body = await request.text();
+    logger.debug('Request body (truncated)', { 
+      body: body.substring(0, 200) + (body.length > 200 ? '...' : '') 
+    });
+    
+    // Verify webhook signature
+    const signature = request.headers.get('x-hub-signature-256');
+    logger.debug('Signature header', { signature });
+
+    // Skip signature verification in development if APP_SECRET not available
+    const shouldVerify = process.env.NODE_ENV === 'production';
+    
+    if (shouldVerify && (!signature || !whatsappService.verifyWebhookSignature(body, signature))) {
+      logger.warn('Unauthorized request: signature verification failed');
+      return new NextResponse('Unauthorized', { status: 401 });
+    }
+
+    // Parse the webhook data
+    let webhookData: any;
+    try {
+      webhookData = JSON.parse(body);
+    } catch (error) {
+      logger.error('Failed to parse webhook data', error);
+      return new NextResponse('Invalid JSON', { status: 400 });
+    }
+
+    if (webhookData.object !== 'whatsapp_business_account') {
+      logger.warn(`Invalid webhook object: ${webhookData.object}`);
+      return new NextResponse('Invalid webhook object', { status: 400 });
+    }
+
+    // Create message processor
+    logger.debug('Creating MessageProcessor instance');
+    const messageProcessor = new MessageProcessor();
+
+    // Process each message in the webhook
+    for (const entry of webhookData.entry) {
+      for (const change of entry.changes) {
+        if (change.field === 'messages' && change.value.messages) {
+          for (const message of change.value.messages) {
+            const fromNumber = message.from;
+            logger.debug(`Processing message from ${fromNumber}`, { message });
+            
+            let replyMessage: any;
+
+            // Handle text messages
+            if (message.type === 'text' && message.text?.body) {
+              const messageText = message.text.body;
+              logger.info(`Received text message: "${messageText}" from ${fromNumber}`);
+              replyMessage = await processTextMessage(messageText, fromNumber, messageProcessor);
+            }
+            // Handle interactive message responses
+            else if (message.type === 'interactive' && message.interactive) {
+              logger.info('Processing interactive message', { 
+                type: message.interactive.type,
+                from: fromNumber 
+              });
+              replyMessage = await processInteractiveMessage(
+                message.interactive, 
+                fromNumber, 
+                messageProcessor
+              );
+            }
+            // Default fallback for unrecognized message types
+            else {
+              logger.info(`Unrecognized message type: ${message.type}, sending welcome menu`);
+              replyMessage = {
+                messaging_product: 'whatsapp',
+                to: fromNumber,
+                type: 'text',
+                text: {
+                  body: '👋 Welcome to CryptoChap!\n\nYour personal USDC wallet on Base network. Send "menu" to get started or use these commands:\n\n• "balance" - Check wallet balance\n• "address" - Get deposit address\n• "buy 50" - Purchase USDC\n• "help" - Show all commands\n\nWhat would you like to do? 💰'
+                }
+              };
+            }
+
+            // Send the reply
+            logger.debug('Sending WhatsApp reply', { replyMessage });
+            
+            try {
+              await whatsappService.sendMessage(replyMessage);
+              logger.info(`Successfully sent reply to ${fromNumber}`);
+            } catch (error) {
+              logger.error('Failed to send WhatsApp message', error);
+              
+              // If we get a 401 error, the token might be expired
+              if (error instanceof Error && error.message.includes('401')) {
+                logger.warn('WhatsApp token appears to be expired or invalid');
+                
+                // In a production system, this could trigger an alert or auto-renewal
+                // tokenManager.invalidateToken('whatsapp', process.env.META_WHATSAPP_TOKEN || '');
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return new NextResponse('OK', { status: 200 });
+  } catch (error) {
+    logger.error('Webhook processing error', error);
+    return new NextResponse('Internal Server Error', { status: 500 });
+  }
+}

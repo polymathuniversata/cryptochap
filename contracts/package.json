@@ -1,0 +1,14 @@
+{
+  "name": "cryptochap-contracts",
+  "version": "0.1.0",
+  "description": "Smart contracts for CryptoChap",
+  "scripts": {
+    "compile": "forge build",
+    "test": "forge test",
+    "deploy": "forge script script/Deploy.s.sol",
+    "verify": "forge verify-contract"
+  },
+  "devDependencies": {
+    "@openzeppelin/contracts": "^5.0.0"
+  }
+}

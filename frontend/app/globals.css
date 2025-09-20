@@ -1,0 +1,273 @@
+/* Tailwind CSS directives - processed by PostCSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --whatsapp-green: #25D366;
+  --whatsapp-green-dark: #128C7E;
+  --whatsapp-gray: #F7F7F7;
+  --whatsapp-dark: #34495E;
+  --message-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  --crypto-usdc: #2775CA;
+  --crypto-base: #0052FF;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: #E5DDD5;
+  color: rgb(var(--foreground-rgb));
+  overflow-x: hidden;
+}
+
+.chat-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23128C7E' fill-opacity='0.03'%3E%3Cpath d='m36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.message-bubble {
+  max-width: 65%;
+  word-wrap: break-word;
+  border-radius: 12px;
+  padding: 8px 12px;
+  margin: 4px 0;
+  position: relative;
+  box-shadow: var(--message-shadow);
+  animation: fade-in 0.2s ease-in;
+}
+
+.message-bubble::before {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+}
+
+.message-bubble.own::before {
+  right: -5px;
+  top: 8px;
+  border-left-color: #DCF8C6;
+}
+
+.message-bubble.other::before {
+  left: -5px;
+  top: 8px;
+  border-right-color: #FFFFFF;
+}
+
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 12px;
+  max-width: fit-content;
+}
+
+.typing-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #999;
+  animation: typing 1.4s infinite;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing {
+  0%, 60%, 100% {
+    transform: initial;
+  }
+  30% {
+    transform: translateY(-10px);
+  }
+}
+
+.crypto-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.crypto-badge.usdc {
+  background: rgba(39, 117, 202, 0.1);
+  color: #2775CA;
+}
+
+.crypto-badge.base {
+  background: rgba(0, 82, 255, 0.1);
+  color: #0052FF;
+}
+
+/* Custom scrollbar styling with cross-browser support */
+
+/* Webkit scrollbar fallback for Safari, Chrome, and other WebKit browsers */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.2);
+  border-radius: 2px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0,0,0,0.3);
+}
+
+/* Firefox scrollbar styling - only apply if supported */
+@supports (scrollbar-width: thin) {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,0,0,0.2) transparent;
+  }
+}
+
+/* Additional fallback for older browsers that don't support scrollbar properties */
+.scrollbar-thin {
+  /* Fallback for browsers that don't support scrollbar properties */
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Alternative scrollbar styling for broader browser support */
+.scrollbar-fallback {
+  /* Webkit browsers */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.2) transparent;
+}
+
+/* Ensure backdrop-filter has proper fallbacks */
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.95);
+  /* WebKit-prefixed property MUST come before the unprefixed one for maximum compatibility (Safari, iOS Safari) */
+  -webkit-backdrop-filter: blur(10px);
+  /* Standard property (kept for browsers that support the unprefixed version) */
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  /* Fallback for browsers that don't support backdrop-filter */
+  @supports not (backdrop-filter: blur(10px)) {
+    background: rgba(255, 255, 255, 0.98);
+  }
+}
+
+@media (max-width: 768px) {
+  .message-bubble {
+    max-width: 85%;
+  }
+}
+
+/* Note: scrollbar-width and scrollbar-color are Firefox-only. We keep a WebKit scrollbar fallback above and a generic overflow fallback for other browsers. */
+
+/* Chat interface styles */
+.chat-container-mobile {
+  height: calc(var(--vh, 1vh) * 100);
+}
+
+.chat-container-desktop {
+  height: 100vh;
+}
+
+.messages-container-mobile {
+  max-height: calc(var(--vh, 1vh) * 100 - 130px);
+}
+
+.messages-container-desktop {
+  max-height: calc(100vh - 280px);
+}
+
+.menu-slide-up {
+  animation: slideUp 0.3s ease-out forwards;
+  transform-origin: bottom center;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (min-width: 640px) {
+  .menu-slide-up {
+    animation: slideUpDesktop 0.3s ease-out forwards;
+  }
+  
+  @keyframes slideUpDesktop {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+}
+
+/* Loading animation delays */
+.animation-delay-0 { animation-delay: 0ms; }
+.animation-delay-150 { animation-delay: 150ms; }
+.animation-delay-300 { animation-delay: 300ms; }
+
+/* Dynamic sizing utilities */
+.skeleton-small { height: 12px; }
+.skeleton-medium { height: 20px; }
+.skeleton-large { height: 28px; }
+
+/* Progress bar width utilities */
+.progress-0 { width: 0%; }
+.progress-25 { width: 25%; }
+.progress-50 { width: 50%; }
+.progress-75 { width: 75%; }
+.progress-100 { width: 100%; }
+
+/* Animation duration utilities */
+.duration-3000 { animation-duration: 3000ms; }
+.duration-4000 { animation-duration: 4000ms; }
+.duration-5000 { animation-duration: 5000ms; }
+.duration-6000 { animation-duration: 6000ms; }
+.duration-7000 { animation-duration: 7000ms; }
+
+/* Progress width utilities for dynamic progress bars */
+.progress-dynamic { transition: width 0.5s ease-in-out; }
+
+/* Skeleton dimension utilities */
+.skeleton-width-dynamic { max-width: 100%; }
+.skeleton-height-dynamic { }
+
+/* Dynamic property utilities for inline style replacements */
+[data-progress-width] { 
+  transition: width 0.5s ease-in-out;
+  width: var(--progress-width, 0%);
+}
+
+[data-skeleton-width] { 
+  width: var(--skeleton-width, 100%);
+  max-width: 100%;
+}
+
+[data-skeleton-height] { 
+  height: var(--skeleton-height, 20px);
+}
+
+[data-toast-duration] {
+  animation-duration: var(--toast-duration, 5000ms);
+}

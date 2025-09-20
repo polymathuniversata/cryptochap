@@ -14,7 +14,18 @@
       "Bash(git reset:*)",
       "Bash(timeout 10s npm run dev)",
       "Bash(npx next dev:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(npm install:*)",
+      "Bash(timeout 30s npm install --prefer-offline --no-audit)",
+      "Bash(npm --version)",
+      "Bash(npm test)",
+      "Bash(npx jest:*)",
+      "Bash(npx tsc:*)",
+      "Bash(./node_modules/.bin/tsc:*)",
+      "Read(/mnt/e/**)",
+      "Read(/mnt/e/**)",
+      "Read(/mnt/e/**)",
+      "Bash(npm audit:*)"
     ],
     "deny": [],
     "ask": []

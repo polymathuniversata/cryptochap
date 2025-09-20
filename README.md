@@ -1,6 +1,4 @@
-<div align="center">
-
-# 🔗 cryptoChap
+# 🔗 CryptoChap
 ### WhatsApp-native USDC on Base
 
 *Send, receive, and buy USDC on Base network through WhatsApp chat*
@@ -8,49 +6,304 @@
 [![Base Network](https://img.shields.io/badge/Base-0052FF?style=for-the-badge&logo=ethereum&logoColor=white)](https://base.org)
 [![USDC](https://img.shields.io/badge/USDC-2775CA?style=for-the-badge&logo=centre&logoColor=white)](https://centre.io)
 [![WhatsApp](https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://whatsapp.com)
+[![Security: AAA](https://img.shields.io/badge/Security-AAA-green)](https://cryptochap.dev/security)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-</div>
+## 📁 Project Structure
 
----
+```
+cryptochap/
+├── frontend/                    # Next.js React application
+│   ├── app/                    # Next.js App Router
+│   ├── components/             # Reusable UI components
+│   ├── lib/                    # Utility libraries
+│   └── types/                  # TypeScript type definitions
+├── backend/                    # Express.js API server with TypeScript
+│   ├── src/
+│   │   ├── config/             # Configuration management
+│   │   ├── controllers/        # Route handlers (7 controllers)
+│   │   │   ├── api.ts          # Legacy API routes
+│   │   │   ├── index.ts        # Route index
+│   │   │   ├── system.ts       # Health, metrics, docs
+│   │   │   ├── users.ts        # User management
+│   │   │   ├── wallets.ts      # Wallet operations
+│   │   │   ├── transactions.ts # Transaction handling
+│   │   │   └── whatsapp.ts     # WhatsApp webhooks
+│   │   ├── middleware/         # Security & validation (4 middlewares)
+│   │   │   ├── validation.ts   # Input validation (Joi)
+│   │   │   ├── security.ts     # Security headers (CSP, HSTS)
+│   │   │   ├── rateLimiter.ts  # Rate limiting
+│   │   │   └── errorHandler.ts # Error handling
+│   │   ├── services/           # Business logic (9 services)
+│   │   │   ├── blockchain.service.ts      # Base network operations
+│   │   │   ├── wallet-derivation.service.ts # HD wallet derivation
+│   │   │   ├── whatsapp-engine.service.ts  # Message processing
+│   │   │   ├── monitoring.service.ts       # Performance tracking
+│   │   │   ├── database-backup.service.ts  # Backup automation
+│   │   │   ├── logging.service.ts          # Structured logging
+│   │   │   ├── wallet.service.ts           # Wallet management
+│   │   │   ├── token-management.service.ts # Token operations
+│   │   │   └── whatsapp.service.ts         # WhatsApp integration
+│   │   ├── utils/              # Utility functions
+│   │   └── docs/               # API documentation
+├── contracts/                  # Smart contracts (Solidity)
+│   ├── contracts/
+│   │   ├── CryptoChapWallet.sol # Main wallet contract
+│   │   └── MockERC20.sol        # Test token
+│   └── test/                   # Contract tests
+├── tests/                      # Integration tests
+├── deployments/                # Deployment configurations
+├── docs/                       # Documentation
+└── scripts/                    # Build and deployment scripts
+```
+
+## 🔧 Technology Stack
+
+### Frontend
+- **Framework**: Next.js 15 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **UI Components**: Radix UI
+- **State Management**: React Context + Custom Hooks
+- **Testing**: Jest + React Testing Library
+
+### Backend
+- **Framework**: Express.js with TypeScript
+- **Database**: PostgreSQL with connection pooling
+- **Caching**: Redis for sessions and rate limiting
+- **Blockchain**: ethers.js v6 for Base network
+- **Validation**: Joi for input validation
+- **Logging**: Winston for structured logging
+- **Testing**: Jest with comprehensive coverage
+
+### Blockchain
+- **Network**: Base (Ethereum Layer 2)
+- **Tokens**: USDC, ETH
+- **Smart Contracts**: Solidity with OpenZeppelin
+- **Wallet**: HD wallet derivation (BIP-44)
+- **RPC**: Configurable provider endpoints
+
+### DevOps & Deployment
+- **Containerization**: Docker + Docker Compose
+- **Build Tools**: TypeScript, ESLint, Prettier
+- **Testing**: Jest, Playwright
+- **Monitoring**: Custom metrics and alerting
+
+## 📡 API Endpoints
+
+### System Endpoints
+- `GET /api/system/health` - Health check with database status
+- `GET /api/system/metrics` - Performance and system metrics
+- `GET /api/docs` - API documentation overview
+- `GET /api/docs/openapi.json` - OpenAPI 3.0 specification
+- `GET /api/docs/errors` - Comprehensive error code reference
+
+### User Management
+- `GET /api/users/{id}` - Get user by ID
+- `PUT /api/users/{id}` - Update user information
+- `POST /api/users` - Create new user (WhatsApp integration)
+- `DELETE /api/users/{id}` - Soft delete user
+
+### Wallet Management
+- `GET /api/wallets/{id}` - Get wallet information
+- `POST /api/wallets` - Create new wallet
+- `PUT /api/wallets/{id}/balance` - Update wallet balance
+- `DELETE /api/wallets/{id}` - Deactivate wallet (soft delete)
+- `GET /api/users/{userId}/wallets` - Get user wallets
+
+### Transaction Management
+- `GET /api/transactions/{id}` - Get transaction details
+- `POST /api/transactions` - Create new transaction
+- `PUT /api/transactions/{id}/status` - Update transaction status
+- `GET /api/users/{userId}/transactions` - Get user transaction history
+- `GET /api/wallets/{walletId}/transactions` - Get wallet transaction history
+
+### WhatsApp Integration
+- `GET /whatsapp/webhook` - WhatsApp webhook verification
+- `POST /whatsapp/webhook` - WhatsApp message processing
+- `POST /whatsapp/webhook/status` - WhatsApp status updates
+- `POST /api/whatsapp/send` - Send WhatsApp message (testing)
+- `POST /api/whatsapp/templates` - Send WhatsApp templates
+- `GET /api/whatsapp/status` - WhatsApp configuration status
+- `GET /api/whatsapp/health` - WhatsApp health check
+
+## 🤖 WhatsApp Commands
+
+Users can interact with CryptoChap using these commands:
+
+### Core Commands
+- `balance` - Check wallet balance (ETH & USDC)
+- `send AMOUNT ADDRESS` - Transfer USDC to address
+- `receive` - Get receiving address
+- `help` - Show available commands
+
+### Advanced Commands
+- `status` - Check network status and gas prices
+- `wallet` - Get detailed wallet information
+- `network` - View Base network information
+- `gas` - Check current gas prices
+
+### Interactive Features
+- Button replies for quick actions
+- Template messages for formatted responses
+- Real-time transaction updates
+- Error handling with helpful messages
+
+## 🛡️ Security Features
+
+CryptoChap implements enterprise-grade security measures:
+
+### Input Validation & Sanitization
+- **Joi-based validation** with comprehensive schemas for all endpoints
+- **Security-focused input sanitization** to prevent injection attacks
+- **Suspicious pattern detection** for malicious input
+- **Rate limiting** (100 req/15min global, 10 req/min for sensitive endpoints)
+
+### Content Security Policy (CSP)
+- **Production-ready CSP headers** to prevent XSS attacks
+- **API-specific security headers** for enhanced protection
+- **Request ID middleware** for comprehensive request tracing
+- **Strict Transport Security (HSTS)** for HTTPS enforcement
+
+### Comprehensive Monitoring
+- **Performance metrics tracking** with automatic alerting
+- **Memory usage monitoring** with configurable thresholds
+- **Health check endpoints** for system status
+- **Error tracking and categorization**
+- **Database backup automation** with retention policies
+
+### Blockchain Security
+- **HD wallet derivation** with secure key management
+- **Transaction validation** before execution
+- **Gas estimation** with safety buffers
+- **Address format validation** using ethers.js
+- **Smart contract security** with OpenZeppelin standards
+
+### Database Security
+- **Automated backup system** with configurable retention
+- **Parameterized queries** to prevent SQL injection
+- **Connection pooling** for optimal performance
+- **SSL/TLS encryption** for database connections
+- **Data validation** at application and database levels
+
+## 🔐 Authentication & Authorization
+
+### Security Headers
+All API responses include comprehensive security headers:
+- **Content-Security-Policy** - Prevents XSS attacks
+- **Strict-Transport-Security** - Enforces HTTPS
+- **X-Frame-Options** - Prevents clickjacking
+- **X-Content-Type-Options** - Prevents MIME sniffing
+- **X-XSS-Protection** - Enables XSS filtering
+
+### Rate Limiting
+- **Global rate limiting:** 100 requests per 15 minutes
+- **Strict rate limiting:** 10 requests per minute for sensitive endpoints
+- **IP-based tracking** with automatic blocking
+
+### Input Validation
+- **Comprehensive validation schemas** for all endpoints
+- **Security-focused sanitization** of all user input
+- **Suspicious pattern detection** for malicious payloadsts
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+
+- PostgreSQL 13+
+- Redis 6+
+- Docker & Docker Compose
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/polymathuniversata/cryptochap.git
+   cd cryptochap
+   ```
+
+2. **Setup environment variables**
+   ```bash
+   cp frontend/.env.local.example frontend/.env.local
+   cp backend/.env.example backend/.env
+   ```
+
+3. **Start development environment**
+   ```bash
+   # Start dependencies (PostgreSQL, Redis)
+   docker-compose up -d
+
+   # Install frontend dependencies
+   cd frontend && npm install
+
+   # Install backend dependencies
+   cd ../backend && npm install
+
+   # Start development servers
+   cd ../backend && npm run dev &
+   cd ../frontend && npm run dev
+   ```
+
+4. **Access the application**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:3001
+   - API Documentation: http://localhost:3001/api/docs
+   - Health Check: http://localhost:3001/api/system/health
+   - Metrics: http://localhost:3001/api/system/metrics
+
+## 🛠️ Development
+
+### Available Scripts
+
+#### Frontend (`cd frontend`)
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
+npm run test         # Run tests
+```
+
+#### Backend (`cd backend`)
+```bash
+npm run dev          # Start development server with hot reload
+npm run build        # Build TypeScript
+npm run start        # Start production server
+npm run test         # Run tests
+npm run lint         # Run ESLint
+```
+
+### Testing
+```bash
+# Run all tests
+npm test
+
+# Run with coverage
+npm run test:coverage
+
+# Run specific test suite
+npm test -- tests/unit/wallet.test.ts
+```
+
+## 📚 Documentation
+
+- [📖 System Architecture](docs/architecture.md)
+- [👥 User Flows](docs/user-flows.md)
+- [📋 Sprint Planning](docs/sprint-planning.md)
+- [🔧 System Design](docs/system-design.md)
+- [🧪 Testing Strategy](docs/testing-strategy.md)
+- [🚀 Deployment Guide](deployments/deployment-guide.md)
+- [📱 WhatsApp Setup](docs/WHATSAPP_SETUP_GUIDE.md)
+- [🔧 WhatsApp Architecture](docs/WHATSAPP_ARCHITECTURE.md)
 
 ## ✨ What you get
 
 🚀 **WhatsApp-first experience** — Native chat interface for crypto operations  
 💰 **Auto wallet generation** — Unique wallet per user (custodial or non-custodial)  
 ⚡ **Base network integration** — Fast, low-cost USDC transfers  
-🛒 **Seamless onramp** — Buy crypto with fiat, mobile money, or cards  
+� **Seamless onramp** — Buy crypto with fiat, mobile money, or cards  
 📱 **Mobile money support** — M-Pesa, Airtel Money, Tigo Pesa integration  
-🔐 **Enterprise security** — Webhook architecture with proper validation  
-
----
-
-## 🏗️ How it works
-
-```
-User message → WhatsApp API → Your server → Base network → Response
-```
-
-1. **📥 Receive** — User sends command via WhatsApp
-2. **🔍 Process** — Bot parses intent and maps phone to wallet
-3. **⚡ Execute** — Perform on-chain action or generate payment link
-4. **📤 Respond** — Send confirmation, links, or transaction details
-
----
-
-## 🔧 Integration options
-
-### WhatsApp Providers
-| Provider | Setup Time | Features |
-|----------|------------|----------|
-| **Twilio** | 🟢 Fast | Single webhook, business API |
-| **Meta Cloud API** | 🟡 Medium | Templates, media, direct integration |
-
-### Supported Commands
-- `💰 balance` — Check USDC and ETH balance
-- `📍 address` — Get your deposit address  
-- `💳 buy 50` — Purchase USDC with fiat/mobile money
-- `📤 send 10 USDC to 0x...` — Transfer to address or phone
-- `📋 history` — View recent transactions
+� **Enterprise security** — Webhook architecture with proper validation
 
 
 ## 📝 Environment Variables
@@ -58,6 +311,9 @@ User message → WhatsApp API → Your server → Base network → Response
 Create a `.env` file with the following configuration:
 
 ```env
+# Database Configuration
+POSTGRES_PASSWORD=your_secure_postgres_password_here
+
 # WhatsApp provider: twilio | meta
 WHATSAPP_PROVIDER=twilio
 
@@ -298,6 +554,32 @@ app.listen(3000, () => console.log('Bot listening on :3000'))
 | **Onramp Link Issues** | Verify provider parameters, allowlists, app IDs |
 | **Mobile Money Fails** | Check phone format, wallet balance, shortcode |
 | **Payout Rejected** | Verify KYC limits, daily caps, country/currency |
+
+## 📚 Documentation
+
+CryptoChap includes comprehensive documentation covering all aspects of the platform:
+
+### 📖 Core Documentation
+- **[Architecture Guide](docs/architecture.md)** - System architecture and design patterns
+- **[Implementation Guide](docs/implementation-guide.md)** - Complete feature overview and setup instructions
+- **[Service Breakdown](docs/service-breakdown.md)** - Detailed analysis of all 9 backend services
+- **[API Documentation](docs/api-documentation.md)** - Complete REST API reference with examples
+
+### 🛠️ Technical Documentation
+- **[System Design](docs/system-design.md)** - Technical specifications and design decisions
+- **[Testing Strategy](docs/testing-strategy.md)** - Testing approach and coverage requirements
+- **[User Flows](docs/user-flows.md)** - User interaction patterns and workflows
+
+### 📱 WhatsApp Integration
+- **[WhatsApp Setup Guide](docs/WHATSAPP_SETUP_GUIDE.md)** - Complete WhatsApp Business API setup
+- **[WhatsApp Instructions](docs/WHATSAPP_INSTRUCTIONS.md)** - Integration and configuration steps
+- **[WhatsApp Architecture](docs/WHATSAPP_ARCHITECTURE.md)** - WhatsApp system design
+- **[WhatsApp Checklist](docs/WHATSAPP_CHECKLIST.md)** - Setup verification checklist
+
+### 🚀 Deployment & Operations
+- **[Deployment Guide](DEPLOYMENT.md)** - Production deployment instructions
+- **[Sprint Planning](docs/sprint-planning.md)** - Development roadmap and milestones
+- **[Sprint 1 Report](docs/sprint1-completion-report.md)** - Completed features and achievements
 
 ---
 
